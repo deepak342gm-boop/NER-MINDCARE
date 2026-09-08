@@ -30,13 +30,20 @@ jobs:
           npm init -y
           npm install @capacitor/core @capacitor/cli @capacitor/android
 
+      - name: Prepare web files
+        run: |
+          mkdir -p www
+          cp index.html www/
+          cp style.css www/
+          cp script.js www/
+
       - name: Create Capacitor config
         run: |
           cat > capacitor.config.json <<'EOF'
           {
             "appId": "com.dipakmaurya.nermindcare",
             "appName": "NER MindCare",
-            "webDir": ".",
+            "webDir": "www",
             "bundledWebRuntime": false
           }
           EOF
@@ -46,6 +53,9 @@ jobs:
 
       - name: Copy web files
         run: npx cap copy android
+
+      - name: Sync Capacitor
+        run: npx cap sync android
 
       - name: Build APK
         working-directory: android
