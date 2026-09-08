@@ -1,0 +1,58 @@
+name: Build NER MindCare APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install Capacitor
+        run: |
+          npm init -y
+          npm install @capacitor/core @capacitor/cli @capacitor/android
+
+      - name: Create Capacitor config
+        run: |
+          cat > capacitor.config.json <<'EOF'
+          {
+            "appId": "com.dipakmaurya.nermindcare",
+            "appName": "NER MindCare",
+            "webDir": ".",
+            "bundledWebRuntime": false
+          }
+          EOF
+
+      - name: Add Android
+        run: npx cap add android
+
+      - name: Copy web files
+        run: npx cap copy android
+
+      - name: Build APK
+        working-directory: android
+        run: ./gradlew assembleDebug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: NER-MindCare-APK
+          path: android/app/build/outputs/apk/debug/app-debug.apk
